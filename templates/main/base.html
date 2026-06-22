@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        ProBean Dashboard
+        {% endblock %}
+    </title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/logo/logo.ico') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/scrollbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/fonts.css') }}">
+    
+</head>
+
+<body class="bg-white text-slate-700 antialiased selection:bg-green-500 selection:text-white overflow-x-hidden">
+
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" 
+         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300 opacity-0">
+    </div>
+
+    <aside id="main-sidebar" 
+           class="fixed left-0 top-0 h-full w-64 bg-white border-r border-green-100 flex flex-col z-50 
+                  -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+
+        <a href="javascript:location.reload()" class="h-16 flex items-center px-6 border-b border-green-100 hover:bg-green-50 transition">
+
+            <div class="flex items-center gap-2">
+
+                <img src="{{ url_for('static', filename='assets/logo/logo-removebg-preview.png') }}" alt="ProBean AI Logo" class="h-12 w-12">
+
+                <span class="text-slate-900 font-bold text-lg tracking-tight">
+                    ProBean AI
+                </span>
+
+            </div>
+
+        </a>
+
+        {% set active_class = "flex items-center gap-3 px-4 py-3 bg-green-50 text-green-700 rounded-lg border border-green-100" %}
+        {% set inactive_class = "flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition" %}
+
+        <nav class="flex-1 px-4 py-6 space-y-2">
+
+            <a href="{{ url_for('main.dashboard') }}"
+               class="{{ active_class if request.endpoint == 'main.dashboard' else inactive_class }}">
+                🌱
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('main.history') }}"
+               class="{{ active_class if request.endpoint == 'main.history' else inactive_class }}">
+                📊
+                <span class="text-sm font-medium">Prediction History</span>
+            </a>
+
+            <!-- <a href="{{ url_for('main.settings') }}"
+               class="{{ active_class if request.endpoint == 'main.settings' else inactive_class }}">
+                ⚙️
+                <span class="text-sm font-medium">Settings</span>
+            </a> -->
+
+        </nav>
+
+        <a href="{{ url_for('main.settings') }}"
+           class="block p-4 border-t border-green-100 hover:bg-green-50 transition">
+
+            <div class="flex items-center gap-3">
+
+                {% if session.get("guest") %}
+
+                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-green-700 font-semibold text-sm">
+                            GU
+                        </span>
+                    </div>
+
+                {% elif user.avatar %}
+
+                    <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}"
+                        class="h-10 w-10 rounded-full object-cover border border-green-100">
+
+                {% else %}
+
+                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-green-700 font-semibold text-sm">
+                            {{ user.name[:2].upper() }}
+                        </span>
+                    </div>
+
+                {% endif %}
+
+                <div class="flex-1 min-w-0">
+
+                    {% if session.get("guest") %}
+
+                        <p class="text-sm font-medium text-slate-900 truncate">
+                            Guest User
+                        </p>
+
+                        <p class="text-xs text-slate-500 truncate">
+                            Predictions will not be saved
+                        </p>
+
+                    {% else %}
+
+                        <p class="text-sm font-medium text-slate-900 truncate">
+                            {{ user.name }}
+                        </p>
+
+                        <p class="text-xs text-slate-500 truncate">
+                            {{ user.email }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </aside>
+
+    <main class="lg:pl-64 min-h-screen bg-white transition-all duration-300">
+
+        <header class="h-16 bg-white/80 backdrop-blur border-b border-green-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-green-50 hover:text-green-700 transition focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+
+                <h1 class="text-base sm:text-lg font-semibold text-slate-900">
+                    {% block page_title %}
+                    Dashboard
+                    {% endblock %}
+                </h1>
+            </div>
+
+            <a href="{{ url_for('auth.logout') }}"
+               class="text-sm text-slate-500 hover:text-green-700 transition flex items-center gap-2">
+                🚪 <span class="hidden sm:inline">Logout</span>
+            </a>
+
+        </header>
+
+        {% block content %}
+        {% endblock %}
+
+        <div id="toast-container" class="fixed bottom-5 right-5 space-y-3 z-50"></div>
+
+        <div class="fixed bottom-6 right-6 z-40 group flex items-center">
+    
+            <div class="absolute right-16 opacity-0 translate-x-2 pointer-events-none
+                        group-hover:opacity-100 group-hover:translate-x-0
+                        transition-all duration-300 ease-out
+                        bg-amber-950 text-amber-50 text-xs font-medium px-3 py-1.5 rounded-lg shadow-md
+                        whitespace-nowrap flex items-center">
+                Predict Bean
+                <div class="absolute right-[-4px] top-1/2 -translate-y-1/2 w-2 h-2 bg-amber-950 rotate-45"></div>
+            </div>
+
+            <button onclick="openPredictionModal()"
+                class="w-14 h-14 rounded-full bg-amber-800 text-white shadow-xl 
+                    hover:bg-amber-900 hover:scale-110 active:scale-95
+                    flex items-center justify-center transition-all duration-300
+                    animate-pulse hover:animate-none">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                </svg>
+            </button>
+
+        </div>
+
+    </main>
+
+    {% include "partials/toasts.html" %}
+    <script src="{{ url_for('static', filename='js/toasts.js') }}"></script>
+
+    {% include "components/modal.html" %}
+    <script src="{{ url_for('static', filename='js/components/modal.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scroll-restoration.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main/settings.js') }}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="{{ url_for('static', filename='js/components/sidebar.js') }}"></script>
+
+</body>
+</html>
